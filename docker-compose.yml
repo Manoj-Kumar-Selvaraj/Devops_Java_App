@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: employees_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  springboot-app:
+    build:
+      context: ./springboot-employee-api
+      dockerfile: Dockerfile
+    container_name: springboot-app
+    depends_on:
+      - mysql-db
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  angular-frontend:
+    build:
+      context: ./employee-frontend
+      dockerfile: Dockerfile
+    container_name: angular-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - springboot-app
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
